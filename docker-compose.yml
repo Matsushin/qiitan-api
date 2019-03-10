@@ -1,0 +1,22 @@
+version: '3.4'
+services:
+  api:
+    container_name: api
+    build:
+      context: ./
+      dockerfile: docker/api/Dockerfile
+    environment:
+      - ENV=local
+    volumes:
+      - ./:/go/src/github.com/Matsushin/qiitan-api
+    links:
+      - mysql
+    ports:
+      - "8080:8080"
+  mysql:
+    build: docker/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: root
+    ports:
+      - "4306:3306"
