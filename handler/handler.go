@@ -13,6 +13,7 @@ func NewHandler() *gin.Engine {
 	v1 := r.Group("/v1")
 
 	v1.GET("/articles/", V1GetArticles)
+	v1.GET("/ranking/like", V1GetLikeRanking)
 
 	return r
 }

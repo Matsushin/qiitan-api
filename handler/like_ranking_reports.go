@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// V1GetArticles 記事一覧のレポートを返却する
-func V1GetArticles(ctx *gin.Context) {
+// V1GetLikeRanking いいね数の記事ランキングレポートを返却する
+func V1GetLikeRanking(ctx *gin.Context) {
 
 	db := mysql.GetConnection()
 
@@ -28,7 +28,8 @@ LEFT OUTER JOIN
   stocks AS s
   ON a.id = s.article_id
 GROUP BY a.id
-ORDER BY a.id
+ORDER BY like_count desc
+LIMIT 20
 `
 	rows, err := db.Query(q)
 	if err != nil {

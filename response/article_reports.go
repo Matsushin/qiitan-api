@@ -25,7 +25,8 @@ func (as *Articles) AddArticle(a Article) {
 
 // Articleの構造体
 type Article struct {
-	ID        int    `json:"id"`
-	Title     string `json:"title"`
-	LikeCount int    `json:"like_count"`
+	ID         int    `json:"id"`
+	Title      string `json:"title"`
+	LikeCount  int    `json:"like_count"`
+	StockCount int    `json:"stock_count"`
 }
