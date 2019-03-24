@@ -12,9 +12,11 @@ func NewHandler() *gin.Engine {
 	r.Use(logger.ReqID, logger.Logger)
 
 	v1 := r.Group("/v1")
+	pv := r.Group("/pvt")
 
 	v1.GET("/articles/", V1GetArticles)
 	v1.GET("/ranking/like", V1GetLikeRanking)
+	pv.GET("/health", Health)
 
 	go cache.InitCacheUpdateSchedule()
 	return r
