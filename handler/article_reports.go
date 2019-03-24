@@ -18,16 +18,10 @@ func V1GetArticles(ctx *gin.Context) {
 SELECT 
   a.id AS id, 
   a.title AS title,
-  count(l.id) AS like_count,
-  count(s.id) as stock_count
+  a.user_id AS user_id,
+  u.username AS username
 FROM articles AS a
-LEFT OUTER JOIN 
-  likes AS l
-  ON a.id = l.article_id
-LEFT OUTER JOIN 
-  stocks AS s
-  ON a.id = s.article_id
-GROUP BY a.id
+LEFT OUTER JOIN users AS u ON a.user_id = u.id 
 ORDER BY a.id
 `
 	rows, err := db.Query(q)
@@ -42,10 +36,10 @@ ORDER BY a.id
 	for rows.Next() {
 		var id int
 		var title string
-		var likeCount int
-		var stockCount int
+		var userID int
+		var username string
 
-		err := rows.Scan(&id, &title, &likeCount, &stockCount)
+		err := rows.Scan(&id, &title, &userID, &username)
 		if err != nil {
 			logger.Error(ctx, err)
 			response.UnexpectedError.Respond(ctx)
@@ -53,7 +47,7 @@ ORDER BY a.id
 		}
 
 		if !articles.Contains(id) {
-			a := response.Article{ID: id, Title: title, LikeCount: likeCount, StockCount: stockCount}
+			a := response.Article{ID: id, Title: title, UserID: userID, Username: username}
 			articles.AddArticle(a)
 		}
 	}

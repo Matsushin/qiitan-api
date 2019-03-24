@@ -23,10 +23,10 @@ func (as *Articles) AddArticle(a Article) {
 	*as = append(*as, a)
 }
 
-// Articleの構造体
+// Article の構造体
 type Article struct {
-	ID         int    `json:"id"`
-	Title      string `json:"title"`
-	LikeCount  int    `json:"like_count"`
-	StockCount int    `json:"stock_count"`
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
 }
