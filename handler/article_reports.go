@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
 	"github.com/Matsushin/qiitan-api/mysql"
 	"github.com/Matsushin/qiitan-api/response"
@@ -12,7 +13,8 @@ import (
 // V1GetArticles 記事一覧のレポートを返却する
 func V1GetArticles(ctx *gin.Context) {
 
-	db := mysql.GetConnection()
+	cfg, _ := config.FromContextByGin(ctx)
+	db, _ := mysql.GetConnection(cfg)
 
 	q := `
 SELECT 

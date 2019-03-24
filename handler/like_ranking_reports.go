@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/Matsushin/qiitan-api/cache"
+	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
 	"github.com/Matsushin/qiitan-api/model"
+	"github.com/Matsushin/qiitan-api/mysql"
 	"github.com/Matsushin/qiitan-api/response"
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +15,7 @@ import (
 // V1GetLikeRanking いいね数の記事ランキングレポートを返却する
 func V1GetLikeRanking(ctx *gin.Context) {
 
-	cacheLikeRankingReports, err := cache.GetLikeRanking()
+	cacheLikeRankingReports, err := cache.GetLikeRanking(ctx)
 	if err != nil {
 		logger.Error(ctx, err)
 		response.UnexpectedError.Respond(ctx)
@@ -25,7 +27,9 @@ func V1GetLikeRanking(ctx *gin.Context) {
 		return
 	}
 
-	rows, err := model.GetLikeRanking()
+	cfg, _ := config.FromContextByGin(ctx)
+	db, _ := mysql.GetConnection(cfg)
+	rows, err := model.GetLikeRanking(db)
 	if err != nil {
 		logger.Info(ctx, err)
 		response.UnexpectedError.Respond(ctx)
@@ -53,7 +57,7 @@ func V1GetLikeRanking(ctx *gin.Context) {
 	}
 
 	likeRankingReports := response.LikeRankingReports{LikeRankingList: likeRankingList}
-	cache.PutLikeRanking(likeRankingReports)
+	cache.PutLikeRanking(ctx, likeRankingReports)
 
 	ctx.JSON(http.StatusOK, likeRankingReports)
 }

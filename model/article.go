@@ -2,13 +2,10 @@ package model
 
 import (
 	"database/sql"
-
-	"github.com/Matsushin/qiitan-api/mysql"
 )
 
 // GetLikeRanking いいねランキングをDBから取得する
-func GetLikeRanking() (*sql.Rows, error) {
-	db := mysql.GetConnection()
+func GetLikeRanking(db *sql.DB) (*sql.Rows, error) {
 	q := `
 SELECT 
   a.id AS id, 

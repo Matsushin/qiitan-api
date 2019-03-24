@@ -1,0 +1,17 @@
+[aerospike.likerankingdb]
+Namespace="qiitan"
+Set="like_ranking"
+
+[aerospike.cluster.server]
+Host="$AEROSPIKE_HOST"
+Port=3000
+
+[mysql]
+User = "$DB_USER"
+Password = "$DB_PASSWORD"
+Port = 3306
+Database = "qiitan"
+Host = "$DB_HOST"
+
+[updcache]
+LikeRankingSec = 300

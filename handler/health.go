@@ -14,7 +14,7 @@ func Health(ctx *gin.Context) {
 		ctx.String(http.StatusServiceUnavailable, "config: error: %s", err)
 		return
 	}
-	if err := mysql.ConnectionErr(); err != nil {
+	if err := mysql.ConnectionErr(ctx); err != nil {
 		ctx.String(http.StatusServiceUnavailable, "mysql connection error: %s", err)
 		return
 	}

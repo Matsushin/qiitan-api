@@ -1,12 +1,17 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
+	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
 	"github.com/Matsushin/qiitan-api/model"
+	"github.com/Matsushin/qiitan-api/mysql"
 	"github.com/Matsushin/qiitan-api/response"
 	as "github.com/aerospike/aerospike-client-go"
 	"github.com/aerospike/aerospike-client-go/types"
@@ -19,8 +24,9 @@ type cacheTicker struct {
 }
 
 // InitCacheUpdateSchedule ... キャッシュ自動更新スケジュール登録処理
-func InitCacheUpdateSchedule() {
-	updateScheduleSec := 60 * time.Second
+func InitCacheUpdateSchedule(ctx context.Context) {
+	cfg := config.MustFromContext(ctx)
+	updateScheduleSec := cfg.UpdCache.LikeRankingSec * time.Second
 	ticker := &cacheTicker{
 		t:        time.NewTicker(updateScheduleSec),
 		deadline: updateScheduleSec / 2,
@@ -36,14 +42,14 @@ func InitCacheUpdateSchedule() {
 
 	for tt := range ticker.t.C {
 		logger.WithoutContext().Info("キャッシュの更新を開始しました - " + tt.String())
-		updateCache(ticker)
+		updateCache(ctx, ticker)
 	}
 }
 
-func updateCache(ticker *cacheTicker) {
+func updateCache(ctx context.Context, ticker *cacheTicker) {
 	done := NewChannelErrorResult()
 
-	go updateCacheFunc(done)
+	go updateCacheFunc(ctx, done)
 
 	select {
 	case cacheChannel := <-done: // キャッシュ更新成功
@@ -64,13 +70,15 @@ func updateCache(ticker *cacheTicker) {
 	close(done)
 }
 
-func updateCacheFunc(done chan<- ChannelErrorResult) {
-	err := updateCacheLikeRanking()
+func updateCacheFunc(ctx context.Context, done chan<- ChannelErrorResult) {
+	err := updateCacheLikeRanking(ctx)
 	done <- ChannelErrorResult{Err: err, Panic: false}
 }
 
-func updateCacheLikeRanking() error {
-	rows, err := model.GetLikeRanking()
+func updateCacheLikeRanking(ctx context.Context) error {
+	cfg := config.MustFromContext(ctx)
+	db, _ := mysql.GetConnection(cfg)
+	rows, err := model.GetLikeRanking(db)
 	if err != nil {
 		logger.WithoutContext().Error(err)
 		return err
@@ -96,18 +104,19 @@ func updateCacheLikeRanking() error {
 	}
 
 	likeRankingReports := response.LikeRankingReports{LikeRankingList: likeRankingList}
-	return PutLikeRanking(likeRankingReports)
+	return PutLikeRanking(ctx, likeRankingReports)
 
 }
 
 // PutLikeRanking ... いいねランキングのキャッシュ保管
-func PutLikeRanking(likeRankingReports response.LikeRankingReports) error {
+func PutLikeRanking(ctx context.Context, likeRankingReports response.LikeRankingReports) error {
+	cfg := config.MustFromContext(ctx)
 	var buf []byte
 	mh := &codec.MsgpackHandle{RawToString: true}
 	codec.NewEncoderBytes(&buf, mh).Encode(likeRankingReports)
 
-	client, _ := as.NewClient("127.0.0.1", 3000)
-	key, err := as.NewKey("test", "testset", "likeRanking")
+	client, _ := as.NewClient(cfg.Aerospike.Server.Host, cfg.Aerospike.Server.Port)
+	key, err := as.NewKey(cfg.Aerospike.LikeRankingDB.Namespace, cfg.Aerospike.LikeRankingDB.Set, cfg.Aerospike.LikeRankingDB.Key)
 	if err != nil {
 		return err
 	}
@@ -126,10 +135,11 @@ func PutLikeRanking(likeRankingReports response.LikeRankingReports) error {
 }
 
 // GetLikeRanking ... いいねランキングキャッシュ取得
-func GetLikeRanking() (response.LikeRankingReports, error) {
+func GetLikeRanking(ctx *gin.Context) (response.LikeRankingReports, error) {
+	cfg, _ := config.FromContextByGin(ctx)
 	var likeRankingReports response.LikeRankingReports
-	client, _ := as.NewClient("127.0.0.1", 3000)
-	key, err := as.NewKey("test", "testset", "likeRanking")
+	client, _ := as.NewClient(cfg.Aerospike.Server.Host, cfg.Aerospike.Server.Port)
+	key, err := as.NewKey(cfg.Aerospike.LikeRankingDB.Namespace, cfg.Aerospike.LikeRankingDB.Set, cfg.Aerospike.LikeRankingDB.Key)
 	if err != nil {
 		return likeRankingReports, err
 	}
