@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/Matsushin/qiitan-api/cache"
 	"github.com/Matsushin/qiitan-api/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -15,5 +16,6 @@ func NewHandler() *gin.Engine {
 	v1.GET("/articles/", V1GetArticles)
 	v1.GET("/ranking/like", V1GetLikeRanking)
 
+	go cache.InitCacheUpdateSchedule()
 	return r
 }

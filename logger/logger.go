@@ -149,6 +149,11 @@ func (b Base) WithFields(fields logrus.Fields) *logrus.Entry {
 	return getBase().WithFields(fields)
 }
 
+// Error errorログを出力
+func (b Base) Error(args ...interface{}) {
+	getBase().Error(args...)
+}
+
 // Info infoログを出力
 func (b Base) Info(args ...interface{}) {
 	getBase().Info(args...)
