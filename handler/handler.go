@@ -9,7 +9,7 @@ import (
 // NewHandler engineを生成する
 func NewHandler() *gin.Engine {
 	r := gin.New()
-	r.Use(logger.Logger)
+	r.Use(logger.ReqID, logger.Logger)
 
 	v1 := r.Group("/v1")
 

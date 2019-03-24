@@ -106,8 +106,10 @@ func Logger(ctx *gin.Context) {
 	// Start timer
 	start := time.Now()
 
+	// Create logger
+	requestID, _ := GetReqID(ctx)
 	sharedLogger := WithoutContext().WithFields(logrus.Fields{
-		"requestID": "123456789",
+		"requestID": requestID,
 	})
 	ctx.Set(ctxKeyLogger, sharedLogger)
 
@@ -162,6 +164,11 @@ func (b Base) Info(args ...interface{}) {
 // Fatalf fatalfログを出力
 func (b Base) Fatalf(format string, args ...interface{}) {
 	getBase().Fatalf(format, args...)
+}
+
+// Errorf errorfログを出力
+func (b Base) Errorf(format string, args ...interface{}) {
+	getBase().Errorf(format, args...)
 }
 
 // Infof infofログを出力
