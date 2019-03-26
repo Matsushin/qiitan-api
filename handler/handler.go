@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/Matsushin/qiitan-api/cache"
 	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
+	like_ranking "github.com/Matsushin/qiitan-api/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +24,7 @@ func NewHandler() *gin.Engine {
 
 	ctx := context.Background()
 	ctx = config.NewContext(ctx)
-	go cache.InitCacheUpdateSchedule(ctx)
+	like_ranking.UpdateCache(ctx)
 
 	return r
 }

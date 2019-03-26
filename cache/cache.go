@@ -3,19 +3,9 @@ package cache
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
-	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
-	"github.com/Matsushin/qiitan-api/model"
-	"github.com/Matsushin/qiitan-api/mysql"
-	"github.com/Matsushin/qiitan-api/response"
-	as "github.com/aerospike/aerospike-client-go"
-	"github.com/aerospike/aerospike-client-go/types"
-	"github.com/ugorji/go/codec"
 )
 
 type cacheTicker struct {
@@ -24,12 +14,13 @@ type cacheTicker struct {
 }
 
 // InitCacheUpdateSchedule ... キャッシュ自動更新スケジュール登録処理
-func InitCacheUpdateSchedule(ctx context.Context) {
-	cfg := config.MustFromContext(ctx)
-	updateScheduleSec := cfg.UpdCache.LikeRankingSec * time.Second
+func InitCacheUpdateSchedule(
+	ctx context.Context,
+	updateScheduleSec time.Duration,
+	updateCacheFunc func(ctx context.Context, done chan<- ChannelErrorResult)) {
 	ticker := &cacheTicker{
-		t:        time.NewTicker(updateScheduleSec),
-		deadline: updateScheduleSec / 2,
+		t:        time.NewTicker(updateScheduleSec * time.Second),
+		deadline: updateScheduleSec * time.Second / 2,
 	}
 
 	defer func(ticker *cacheTicker) {
@@ -42,11 +33,15 @@ func InitCacheUpdateSchedule(ctx context.Context) {
 
 	for tt := range ticker.t.C {
 		logger.WithoutContext().Info("キャッシュの更新を開始しました - " + tt.String())
-		updateCache(ctx, ticker)
+		updateCache(ctx, ticker, updateCacheFunc)
 	}
 }
 
-func updateCache(ctx context.Context, ticker *cacheTicker) {
+func updateCache(
+	ctx context.Context,
+	ticker *cacheTicker,
+	updateCacheFunc func(ctx context.Context, done chan<- ChannelErrorResult)) {
+
 	done := NewChannelErrorResult()
 
 	go updateCacheFunc(ctx, done)
@@ -70,89 +65,20 @@ func updateCache(ctx context.Context, ticker *cacheTicker) {
 	close(done)
 }
 
-func updateCacheFunc(ctx context.Context, done chan<- ChannelErrorResult) {
-	err := updateCacheLikeRanking(ctx)
+func UpdateSchedule(
+	ctx context.Context,
+	done chan<- ChannelErrorResult,
+	updateFunc func(ctx context.Context) error) {
+
+	// panic発生時にキャッシュ更新フラグのチャネルを閉じてTickerチャネルを閉じるrecoverにpanicを伝播させる
+	defer func(done chan<- ChannelErrorResult) {
+		if err := recover(); err != nil {
+			done <- ChannelErrorResult{Err: errors.New("Cache update faild."), Panic: true}
+		}
+	}(done)
+
+	//err := updateCacheLikeRanking(ctx)
+	err := updateFunc(ctx)
+
 	done <- ChannelErrorResult{Err: err, Panic: false}
-}
-
-func updateCacheLikeRanking(ctx context.Context) error {
-	cfg := config.MustFromContext(ctx)
-	db, _ := mysql.GetConnection(cfg)
-	rows, err := model.GetLikeRanking(db)
-	if err != nil {
-		logger.WithoutContext().Error(err)
-		return err
-	}
-	defer rows.Close()
-
-	var likeRankingList response.LikeRankingList
-	for rows.Next() {
-		var id int
-		var title string
-		var likeCount int
-
-		err := rows.Scan(&id, &title, &likeCount)
-		if err != nil {
-			logger.WithoutContext().Error(err)
-			return err
-		}
-
-		if !likeRankingList.Contains(id) {
-			l := response.LikeRanking{ID: id, Title: title, LikeCount: likeCount}
-			likeRankingList.AddLikeRanking(l)
-		}
-	}
-
-	likeRankingReports := response.LikeRankingReports{LikeRankingList: likeRankingList}
-	return PutLikeRanking(ctx, likeRankingReports)
-
-}
-
-// PutLikeRanking ... いいねランキングのキャッシュ保管
-func PutLikeRanking(ctx context.Context, likeRankingReports response.LikeRankingReports) error {
-	cfg := config.MustFromContext(ctx)
-	var buf []byte
-	mh := &codec.MsgpackHandle{RawToString: true}
-	codec.NewEncoderBytes(&buf, mh).Encode(likeRankingReports)
-
-	client, _ := as.NewClient(cfg.Aerospike.Server.Host, cfg.Aerospike.Server.Port)
-	key, err := as.NewKey(cfg.Aerospike.LikeRankingDB.Namespace, cfg.Aerospike.LikeRankingDB.Set, cfg.Aerospike.LikeRankingDB.Key)
-	if err != nil {
-		return err
-	}
-	bins := as.BinMap{"selialized": buf}
-
-	err = client.Put(nil, key, bins)
-	if err == nil {
-		return nil
-	}
-	switch e := err.(type) {
-	case types.AerospikeError:
-		return fmt.Errorf("[LikeRanking] AerospikeError:%v, ResultCode:%v", e.Error(), e.ResultCode())
-	default:
-		return err
-	}
-}
-
-// GetLikeRanking ... いいねランキングキャッシュ取得
-func GetLikeRanking(ctx *gin.Context) (response.LikeRankingReports, error) {
-	cfg, _ := config.FromContextByGin(ctx)
-	var likeRankingReports response.LikeRankingReports
-	client, _ := as.NewClient(cfg.Aerospike.Server.Host, cfg.Aerospike.Server.Port)
-	key, err := as.NewKey(cfg.Aerospike.LikeRankingDB.Namespace, cfg.Aerospike.LikeRankingDB.Set, cfg.Aerospike.LikeRankingDB.Key)
-	if err != nil {
-		return likeRankingReports, err
-	}
-	res, err := client.Get(nil, key)
-	if err != nil {
-		return likeRankingReports, err
-	}
-	if res == nil {
-		return likeRankingReports, errors.New("key not found")
-	}
-
-	mh := codec.MsgpackHandle{RawToString: true}
-	codec.NewDecoderBytes(res.Bins["selialized"].([]uint8), &mh).Decode(&likeRankingReports)
-
-	return likeRankingReports, nil
 }
