@@ -6,7 +6,7 @@ import (
 
 	"github.com/Matsushin/qiitan-api/config"
 	"github.com/Matsushin/qiitan-api/logger"
-	like_ranking "github.com/Matsushin/qiitan-api/model"
+	like_ranking "github.com/Matsushin/qiitan-api/model/like_ranking"
 	"github.com/Matsushin/qiitan-api/mysql"
 	"github.com/Matsushin/qiitan-api/response"
 	"github.com/gin-gonic/gin"

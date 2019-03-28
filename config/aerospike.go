@@ -2,8 +2,9 @@ package config
 
 // Aerospike 設定情報の構造体
 type AerospikeConfig struct {
-	Server        ServerConfig
-	LikeRankingDB DBConfig
+	Server         ServerConfig
+	LikeRankingDB  DBConfig
+	StockRankingDB DBConfig
 }
 
 // ServerConfig Config Aerospike clientのConfig

@@ -17,6 +17,7 @@ type cacheTicker struct {
 func InitCacheUpdateSchedule(
 	ctx context.Context,
 	updateScheduleSec time.Duration,
+	modelName string,
 	updateCacheFunc func(ctx context.Context, done chan<- ChannelErrorResult)) {
 	ticker := &cacheTicker{
 		t:        time.NewTicker(updateScheduleSec * time.Second),
@@ -25,20 +26,21 @@ func InitCacheUpdateSchedule(
 
 	defer func(ticker *cacheTicker) {
 		if err := recover(); err != nil {
-			logger.WithoutContext().Error("キャッシュ更新に異常が発生したため定期更新を停止します。修正後再デプロイしてください。 ")
+			logger.WithoutContext().Error(modelName + "キャッシュ更新に異常が発生したため定期更新を停止します。修正後再デプロイしてください。 ")
 			ticker.t.Stop()
 		}
-		logger.WithoutContext().Info("キャッシュの更新を停止しました - " + time.Now().String())
+		logger.WithoutContext().Info(modelName + "キャッシュの更新を停止しました - " + time.Now().String())
 	}(ticker)
 
 	for tt := range ticker.t.C {
-		logger.WithoutContext().Info("キャッシュの更新を開始しました - " + tt.String())
-		updateCache(ctx, ticker, updateCacheFunc)
+		logger.WithoutContext().Info(modelName + "キャッシュの更新を開始しました - " + tt.String())
+		updateCache(ctx, modelName, ticker, updateCacheFunc)
 	}
 }
 
 func updateCache(
 	ctx context.Context,
+	modelName string,
 	ticker *cacheTicker,
 	updateCacheFunc func(ctx context.Context, done chan<- ChannelErrorResult)) {
 
@@ -49,16 +51,16 @@ func updateCache(
 	select {
 	case cacheChannel := <-done: // キャッシュ更新成功
 		if cacheChannel.Err == nil {
-			logger.WithoutContext().Info("キャッシュの更新に成功しました - " + time.Now().String())
+			logger.WithoutContext().Info(modelName + "キャッシュの更新に成功しました - " + time.Now().String())
 		} else {
 			if cacheChannel.Panic {
 				close(done)
 				panic(cacheChannel.Err) // サブgoroutineから受け取ったpanicをメインgoroutineに伝播させる
 			}
-			logger.WithoutContext().Error("キャッシュの更新に失敗しました ")
+			logger.WithoutContext().Error(modelName + "キャッシュの更新に失敗しました ")
 		}
 	case <-time.After(ticker.deadline): // deadlineまでにdoneチャネルが終了しない
-		logger.WithoutContext().Error("キャッシュの更新が時間内に終了しませんでした")
+		logger.WithoutContext().Error(modelName + "キャッシュの更新が時間内に終了しませんでした")
 		<-done
 	}
 

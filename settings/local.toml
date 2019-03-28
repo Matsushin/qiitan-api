@@ -3,6 +3,11 @@ Namespace="test"
 Set="testset"
 Key="like_ranking"
 
+[aerospike.stockrankingdb]
+Namespace="test"
+Set="testset"
+Key="stock_ranking"
+
 [aerospike.server]
 Host="$AEROSPIKE_HOST"
 Port=3000
@@ -16,3 +21,4 @@ Host = "$DB_HOST"
 
 [updcache]
 LikeRankingSec = 10
+StockRankingSec = 5

@@ -39,7 +39,7 @@ LIMIT 20
 // UpdateCache ...定期的にキャッシュ生成
 func UpdateCache(ctx context.Context) {
 	cfg := config.MustFromContext(ctx)
-	go cache.InitCacheUpdateSchedule(ctx, cfg.UpdCache.LikeRankingSec, updateLikeRankingCache)
+	go cache.InitCacheUpdateSchedule(ctx, cfg.UpdCache.LikeRankingSec, "LikeRanking", updateLikeRankingCache)
 }
 
 func updateLikeRankingCache(ctx context.Context, done chan<- cache.ChannelErrorResult) {
