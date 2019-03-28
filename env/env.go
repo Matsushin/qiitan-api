@@ -12,10 +12,6 @@ type Env string
 const (
 	// PRD 本番環境
 	PRD Env = "prd"
-	// STG ステージング環境
-	STG Env = "stg"
-	// DEV dev環境
-	DEV Env = "dev"
 	// LOCAL ローカル環境
 	LOCAL Env = "local"
 	// TEST テスト環境(ci)
@@ -46,16 +42,6 @@ func GetString() string {
 // IsProduction 本番環境の場合trueを返す
 func IsProduction() bool {
 	return Get() == PRD
-}
-
-// IsStaging ステージング環境の場合trueを返す
-func IsStaging() bool {
-	return Get() == STG
-}
-
-// IsDevelopment dev環境の場合trueを返す
-func IsDevelopment() bool {
-	return Get() == DEV
 }
 
 // IsLocal ローカル環境の場合trueを返す

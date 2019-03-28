@@ -44,7 +44,7 @@ func NewConfig(fpath string) (*Config, error) {
 	}
 	_, err = toml.Decode(contents, cfg)
 	if err != nil {
-		logger.WithoutContext().Fatalf("Loading MySQL Config FAILED!!: %+v", err)
+		logger.WithoutContext().Fatalf("Decode MySQL Config FAILED!!: %+v", err)
 		return nil, err
 	}
 	return cfg, err
