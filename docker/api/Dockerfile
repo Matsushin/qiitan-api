@@ -2,6 +2,7 @@ FROM golang:1.11.0-alpine3.8
 
 ENV GOPATH /go
 ENV CGO_ENABLED 0
+ENV QIITAN_API_CONFIG $GOPATH/src/github.com/Matsushin/qiitan-api/settings/local.toml
 WORKDIR /go/src/github.com/Matsushin/qiitan-api/
 
 RUN apk update && apk upgrade && \

@@ -1,6 +1,12 @@
 [aerospike.likerankingdb]
-Namespace="qiitan"
-Set="like_ranking"
+Namespace="test"
+Set="testset"
+Key="like_ranking"
+
+[aerospike.stockrankingdb]
+Namespace="test"
+Set="testset"
+Key="stock_ranking"
 
 [aerospike.cluster.server]
 Host="$AEROSPIKE_HOST"
@@ -15,3 +21,4 @@ Host = "$DB_HOST"
 
 [updcache]
 LikeRankingSec = 300
+StockRankingSec = 300

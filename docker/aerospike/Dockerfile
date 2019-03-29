@@ -1,0 +1,1 @@
+FROM aerospike/aerospike-server

@@ -26,3 +26,7 @@ services:
       MYSQL_USER: root
     ports:
       - "4306:3306"
+  aerospike:
+    build: docker/aerospike
+    ports:
+      - "3000:3000"

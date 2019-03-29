@@ -1,17 +1,24 @@
 [aerospike.likerankingdb]
-Namespace="qiitan"
-Set="like_ranking"
+Namespace="test"
+Set="testset"
+Key="like_ranking"
 
-[aerospike.cluster.server]
-Host="$AEROSPIKE_HOST"
+[aerospike.stockrankingdb]
+Namespace="test"
+Set="testset"
+Key="stock_ranking"
+
+[aerospike.server]
+Host="aerospike"
 Port=3000
 
 [mysql]
-User = "$DB_USER"
-Password = "$DB_PASSWORD"
+User = "root"
+Password = ""
 Port = 3306
 Database = "qiitan_test"
-Host = "$DB_HOST"
+Host = "mysql"
 
 [updcache]
 LikeRankingSec = 10
+StockRankingSec = 10

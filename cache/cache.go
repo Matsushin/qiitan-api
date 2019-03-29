@@ -67,6 +67,7 @@ func updateCache(
 	close(done)
 }
 
+// UpdateSchedule ..キャッシュ更新実行
 func UpdateSchedule(
 	ctx context.Context,
 	done chan<- ChannelErrorResult,
@@ -79,7 +80,6 @@ func UpdateSchedule(
 		}
 	}(done)
 
-	//err := updateCacheLikeRanking(ctx)
 	err := updateFunc(ctx)
 
 	done <- ChannelErrorResult{Err: err, Panic: false}
