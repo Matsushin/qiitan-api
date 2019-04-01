@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: circleci/python:2.7-node-browsers
         environment:
-          AWS_ID: 518965002790
+          AWS_ID: '518965002790'
     steps:
       - checkout
       # Docker in Docker
