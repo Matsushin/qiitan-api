@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       # Docker in Docker
-      - setup_remote_docker # コレを書くことでDocker上にDockerが立ち上がる
+      - setup_remote_docker
       - run: sudo pip install awscli
       - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
       - run: docker build -f ./docker/api/Dockerfile  -t qiitan-api:$CIRCLE_SHA1 .
