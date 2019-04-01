@@ -8,7 +8,6 @@ jobs:
           AWS_ID: '518965002790'
     steps:
       - checkout
-      # Docker in Docker
       - setup_remote_docker
       - run: sudo pip install awscli
       - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
