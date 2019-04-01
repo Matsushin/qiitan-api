@@ -20,13 +20,36 @@ jobs:
       - run: docker build -t qiitan-api:$CIRCLE_SHA1 .
       - run: docker tag hogehoge:fuga-$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
       - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api:$CIRCLE_SHA1
+  deploy:  
+    <<: *defaults
+    docker:
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Deploy
+          command: |
+            . venv/bin/activate
+            export AWS_DEFAULT_REGION="ap-northeast-1"
+            export ECS_TASK_FAMILY_NAME="qiitan-api-task${TARGET}"
+            export ECS_CONTAINER_DEFINITION_NAME="qiitan-api-containerX${TARGET}"
+            export EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ID:role/ecsTaskExecutionRole"
+            bash ./deploy.sh
 
 # Workflows
 workflows:
   version: 2
-  ecr_push:
+  ecr-deploy:
     jobs:
       - ecr:
           filters:
             branches:
-              only: /^master/
+              only:
+                - master
+      - deploy:
+          requires:
+            - ecr
+          filters:
+            branches:
+              only:
+                - master
