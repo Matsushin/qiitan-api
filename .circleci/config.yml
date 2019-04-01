@@ -12,9 +12,9 @@ jobs:
       - setup_remote_docker
       - run: sudo pip install awscli
       - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
-      - run: docker build -f ./docker/api/Dockerfile  -t qiitan-api:$CIRCLE_SHA1 .
+      - run: docker build -f ./docker/api/Dockerfile  -t qiitan-api-ecr:$CIRCLE_SHA1 .
       - run: docker tag qiitan-api-ecr:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
-      - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api:$CIRCLE_SHA1
+      - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
       - run:
           name: Deploy
           command: |
