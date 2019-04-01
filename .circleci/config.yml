@@ -10,8 +10,6 @@ jobs:
       - checkout
       # Docker in Docker
       - setup_remote_docker # コレを書くことでDocker上にDockerが立ち上がる
-      - run: npm install
-      - run: npm run build
       - run: sudo pip install awscli
       - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
       - run: docker build -t qiitan-api:$CIRCLE_SHA1 .
