@@ -1,7 +1,7 @@
 version: 2
 jobs:
   ecr-deploy:
-    working_directory: /go/src/github.com/Matsushin/qiitan-api
+    working_directory: ~/go/src/github.com/Matsushin/qiitan-api
     docker:
       - image: circleci/python:2.7-node-browsers
         environment:
@@ -26,14 +26,3 @@ jobs:
             export ECS_CONTAINER_DEFINITION_NAME="qiitan-api-containerX${TARGET}"
             export EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ID:role/ecsTaskExecutionRole"
             bash ./deploy.sh
-
-# Workflows
-workflows:
-  version: 2
-  ecr-deploy:
-    jobs:
-      - ecr-deploy:
-          filters:
-            branches:
-              only:
-                - master
