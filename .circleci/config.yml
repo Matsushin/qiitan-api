@@ -1,0 +1,32 @@
+version: 2
+defaults: &defaults
+  working_directory: /go/src/github.com/Matsushin/qiitan-api
+  docker:
+    - image: circleci/python:2.7-node-browsers
+      environment:
+        AWS_ID: 518965002790
+
+jobs:
+  ecr:
+    <<: *defaults
+    steps:
+      - checkout
+      # Docker in Docker
+      - setup_remote_docker # コレを書くことでDocker上にDockerが立ち上がる
+      - run: npm install
+      - run: npm run build
+      - run: sudo pip install awscli
+      - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
+      - run: docker build -t qiitan-api:$CIRCLE_SHA1 .
+      - run: docker tag hogehoge:fuga-$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
+      - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api:$CIRCLE_SHA1
+
+# Workflows
+workflows:
+  version: 2
+  ecr_push:
+    jobs:
+      - ecr:
+          filters:
+            branches:
+              only: /^master/
