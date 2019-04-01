@@ -1,13 +1,7 @@
 version: 2
-defaults: &defaults
-  working_directory: /go/src/github.com/Matsushin/qiitan-api
-  docker:
-    - image: circleci/python:2.7-node-browsers
-      environment:
-        AWS_ID: 518965002790
-
 jobs:
-  ecr:
+  ecr-deploy:
+    working_directory: /go/src/github.com/Matsushin/qiitan-api
     docker:
       - image: circleci/python:2.7-node-browsers
         environment:
@@ -23,11 +17,6 @@ jobs:
       - run: docker build -t qiitan-api:$CIRCLE_SHA1 .
       - run: docker tag hogehoge:fuga-$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
       - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api:$CIRCLE_SHA1
-  deploy:  
-    <<: *defaults
-    steps:
-      - checkout
-      - setup_remote_docker
       - run:
           name: Deploy
           command: |
@@ -43,14 +32,7 @@ workflows:
   version: 2
   ecr-deploy:
     jobs:
-      - ecr:
-          filters:
-            branches:
-              only:
-                - master
-      - deploy:
-          requires:
-            - ecr
+      - ecr-deploy:
           filters:
             branches:
               only:
