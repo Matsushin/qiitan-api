@@ -46,6 +46,13 @@ make_task_def(){
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "qiitan-api-logs",
+                    "awslogs-region": "ap-northeast-1"
+                }
+            },
             "command": ["go", "run", "main.go"]
 		},
         {
