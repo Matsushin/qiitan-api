@@ -68,6 +68,16 @@ make_task_def(){
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
+            "portMappings": [
+				{
+					"containerPort": 3306,
+					"hostPort": 3306
+				}
+			],
+            "environment": [
+                {"name": "MYSQL_ALLOW_EMPTY_PASSWORD", "value": "yes"},
+                {"name": "MYSQL_USER", "value": "root"},
+            ],
             "links": ["api:api"]
 		},
         {
@@ -76,6 +86,12 @@ make_task_def(){
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
+            "portMappings": [
+				{
+					"containerPort": 3000,
+					"hostPort": 3000
+				}
+			],
             "links": ["api:api"]
 		},
 	]'
