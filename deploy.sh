@@ -46,9 +46,7 @@ make_task_def(){
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
-            "command": [
-                "go run main.go"
-            ],
+            "command": ["go", "run", "main.go"],
 		},
         {
 			"name": "qiitan-api_nginx",
