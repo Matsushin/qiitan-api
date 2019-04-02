@@ -49,7 +49,7 @@ make_task_def(){
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "qiitan-api-logs",
+                    "awslogs-group": "qiitan-api/api",
                     "awslogs-region": "ap-northeast-1"
                 }
             },
@@ -61,6 +61,13 @@ make_task_def(){
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "qiitan-api/nginx",
+                    "awslogs-region": "ap-northeast-1"
+                }
+            },
 			"portMappings": [
 				{
 					"containerPort": 80,
