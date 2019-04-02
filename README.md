@@ -1,5 +1,5 @@
 # qiitan-api
-Qiitaのコピーアプリ「(Qiitan)[https://github.com/Matsushin/qiitan]」のAPI。
+Qiitaのコピーアプリ「[Qiitan](https://github.com/Matsushin/qiitan)」のAPI。
 
 ## 概要
 記事情報関連のAPIが利用できる。
@@ -22,7 +22,7 @@ $ docker-compose build
 ```
 
 ## データベース
-本リポジトリでは、「(Qiitan)[https://github.com/Matsushin/qiitan]」リポジトリで作成されるDBを利用している。
+本リポジトリでは、「[Qiitan](https://github.com/Matsushin/qiitan)」リポジトリで作成されるDBを利用している。
 APIで結果を返すには事前にデータベースの作成とデータ投入が必要になります。
 
 # アプリケーション起動
