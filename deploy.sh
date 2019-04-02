@@ -41,29 +41,29 @@ deploy_cluster() {
 make_task_def(){
 	task_template='[
 		{
-			"name": "qiitan-api_api",
+			"name": "api",
 			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_api:%s",
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
-            "command": ["go", "run", "main.go"],
+            "command": ["go", "run", "main.go"]
 		},
         {
-			"name": "qiitan-api_nginx",
+			"name": "nginx",
 			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_nginx:%s",
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
 			"portMappings": [
 				{
-					"containerPort": 0,
-					"hostPort": 80
+					"containerPort": 80,
+					"hostPort": 0
 				}
 			],
             "links": ["api:api"]
 		},
         {
-			"name": "qiitan-api_mysql",
+			"name": "mysql",
 			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_mysql:%s",
 			"essential": true,
 			"memory": 200,
@@ -76,12 +76,12 @@ make_task_def(){
 			],
             "environment": [
                 {"name": "MYSQL_ALLOW_EMPTY_PASSWORD", "value": "yes"},
-                {"name": "MYSQL_USER", "value": "root"},
+                {"name": "MYSQL_USER", "value": "root"}
             ],
             "links": ["api:api"]
 		},
         {
-			"name": "qiitan-api_aerospike",
+			"name": "aerospike",
 			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_aerospike:%s",
 			"essential": true,
 			"memory": 200,
@@ -93,7 +93,7 @@ make_task_def(){
 				}
 			],
             "links": ["api:api"]
-		},
+		}
 	]'
 	
 	task_def=$(printf "$task_template" $AWS_ACCOUNT_ID $CIRCLE_SHA1)
