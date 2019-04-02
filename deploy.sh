@@ -41,18 +41,45 @@ deploy_cluster() {
 make_task_def(){
 	task_template='[
 		{
-			"name": "qiitan-api-ecr",
-			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:%s",
+			"name": "qiitan-api_api",
+			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_api:%s",
+			"essential": true,
+			"memory": 200,
+			"cpu": 10,
+            "command": [
+                "go run main.go"
+            ],
+		},
+        {
+			"name": "qiitan-api_nginx",
+			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_nginx:%s",
 			"essential": true,
 			"memory": 200,
 			"cpu": 10,
 			"portMappings": [
 				{
-					"containerPort": 8080,
+					"containerPort": 0,
 					"hostPort": 80
 				}
-			]
-		}
+			],
+            "links": ["api:api"]
+		},
+        {
+			"name": "qiitan-api_mysql",
+			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_mysql:%s",
+			"essential": true,
+			"memory": 200,
+			"cpu": 10,
+            "links": ["api:api"]
+		},
+        {
+			"name": "qiitan-api_aerospike",
+			"image": "%s.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_aerospike:%s",
+			"essential": true,
+			"memory": 200,
+			"cpu": 10,
+            "links": ["api:api"]
+		},
 	]'
 	
 	task_def=$(printf "$task_template" $AWS_ACCOUNT_ID $CIRCLE_SHA1)
@@ -60,7 +87,10 @@ make_task_def(){
 
 push_ecr_image(){
 	eval $(aws ecr get-login --region ap-northeast-1 --no-include-email)
-	docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
+	docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_api:$CIRCLE_SHA1
+    docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_nginx:$CIRCLE_SHA1
+    docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_mysql:$CIRCLE_SHA1
+    docker push $AWS_ACCOUNT_ID.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_aerospike:$CIRCLE_SHA1
 }
 
 register_definition() {

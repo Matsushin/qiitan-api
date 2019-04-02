@@ -11,9 +11,38 @@ jobs:
       - setup_remote_docker
       - run: sudo pip install awscli
       - run: $(aws ecr get-login --region ap-northeast-1 --no-include-email)
-      - run: docker build -f ./docker/api/Dockerfile  -t qiitan-api-ecr:$CIRCLE_SHA1 .
-      - run: docker tag qiitan-api-ecr:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
-      - run: docker push ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api-ecr:$CIRCLE_SHA1
+      - run:
+          name: Build ECR API
+          command: |
+            docker build -f ./docker/api/Dockerfile  -t qiitan-api_api:$CIRCLE_SHA1 .
+      - run:
+          ame: TAG ECR API
+          command: |
+            docker tag qiitan-api_api:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_api:$CIRCLE_SHA1
+      - run:
+          name: Build ECR NGINX
+          command: |
+            docker build -f ./docker/nginx/Dockerfile  -t qiitan-api_nginx:$CIRCLE_SHA1 .
+      - run:
+          ame: TAG ECR NGINX
+          command: |
+            docker tag qiitan-api_nginx:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_nginx:$CIRCLE_SHA1
+      - run:
+          name: Build ECR MYSQL
+          command: |
+            docker build -f ./docker/mysql/Dockerfile  -t qiitan-api_mysql:$CIRCLE_SHA1 .
+      - run:
+          ame: TAG ECR MYSQL
+          command: |
+            docker tag qiitan-api_mysql:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_mysql:$CIRCLE_SHA1
+      - run:
+          name: Build ECR AEROSPIKE
+          command: |
+            docker build -f ./docker/aerospike/Dockerfile  -t qiitan-api_aerospike:$CIRCLE_SHA1 .
+      - run:
+          ame: TAG ECR AEROSPIKE
+          command: |
+            docker tag qiitan-api_aerospike:$CIRCLE_SHA1 ${AWS_ID}.dkr.ecr.ap-northeast-1.amazonaws.com/qiitan-api_aerospike:$CIRCLE_SHA1
       - run:
           name: Deploy
           command: |
